@@ -45,5 +45,34 @@ def most_expensive_baked_good():
     most_expensive_serialized = most_expensive.to_dict()
     return make_response( most_expensive_serialized,   200  )
 
+
+@app.route('/baked_goods', methods=['POST'])
+def create_baked_good():
+    new_baked = BakedGood(
+        name= request.form.get("name"),
+        price=request.form.get("price"),
+        bakery_id=request.form.get("bakery_id")
+    )
+    db.session.add(new_baked)
+    db.session.commit()
+    
+    return jsonify(new_baked.to_dict()), 201    
+
+
+@app.route('/bakeries/<int:id>', methods=['PATCH'])
+def update_bakery(id):
+    bakery = Bakery.query.filter_by(id=id).first()
+    if request.form.get('name'):
+        bakery.name = request.form.get('name')
+    db.session.commit()
+    return jsonify(bakery.to_dict()), 200
+
+@app.route('/baked_goods/<int:id>', methods = ['DELETE'])
+def delete_baked_goods(id):
+    baked_good = BakedGood.query.get_or_404(id)
+    db.session.delete(baked_good)
+    db.session.commit()
+    return {"message" : f'baked good(id={id}) successfully deleted'}
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
